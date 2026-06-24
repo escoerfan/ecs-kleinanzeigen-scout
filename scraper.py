@@ -21,7 +21,7 @@ SUCHBEGRIFFE = [
     "Pritschenwagen",
 ]
 
-RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-{term}/k0c215.rss"
+RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-{term}/k0.rss"
 
 DATA_FILE = Path("angebote.json")
 MAX_ALTER_TAGE = 7
@@ -122,7 +122,8 @@ def scrape_feed(session: requests.Session, suchbegriff: str) -> list:
         print(f"  [{suchbegriff}] HTTP {response.status_code}, {len(response.content)} bytes")
 
         if response.status_code != 200:
-            print(f"  [{suchbegriff}] HTTP-Fehler {response.status_code}, übersprungen.")
+            body_preview = response.text[:300].replace("\n", " ")
+            print(f"  [{suchbegriff}] HTTP-Fehler {response.status_code}: {body_preview}")
             return []
 
         preview = response.text[:200].replace("\n", " ")
