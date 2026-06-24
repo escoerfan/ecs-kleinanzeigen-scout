@@ -12,28 +12,38 @@ SUCHBEGRIFFE = [
     "Reisebus",
     "Linienbus",
     "Stadtbus",
-    "LKW Nutzfahrzeug",
-    "Sattelzug Sattelschlepper",
-    "Kipper LKW",
+    "LKW",
+    "Sattelschlepper",
+    "Kipper",
     "Betonmischer",
     "Bagger",
     "Kommunalfahrzeug",
     "Pritschenwagen",
 ]
 
-RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-nutzfahrzeuge-anhaenger/anzeige:angebote/seite:1/{term}/k0c215+r20.rss"
+RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-{term}/k0c215.rss"
 
 DATA_FILE = Path("angebote.json")
 MAX_ALTER_TAGE = 7
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; ECS-Scout/1.0)"
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Cache-Control": "max-age=0",
 }
 
 
 def rss_url(suchbegriff: str) -> str:
-    encoded = urllib.parse.quote(suchbegriff)
-    return RSS_TEMPLATE.format(term=encoded)
+    term = suchbegriff.lower().replace(" ", "-")
+    return RSS_TEMPLATE.format(term=urllib.parse.quote(term, safe="-"))
 
 
 def extrahiere_preis(description: str) -> str:
@@ -103,16 +113,27 @@ def ist_zu_alt(datum_str: str) -> bool:
         return False
 
 
-def scrape_feed(suchbegriff: str) -> list:
+def scrape_feed(session: requests.Session, suchbegriff: str) -> list:
     url = rss_url(suchbegriff)
+    print(f"  [{suchbegriff}] URL: {url}")
     inserate = []
     try:
-        response = requests.get(url, headers=HEADERS, timeout=15)
-        response.raise_for_status()
-        feed = feedparser.parse(response.content)
-        if feed.bozo and not feed.entries:
-            print(f"  [{suchbegriff}] Feed leer oder fehlerhaft, übersprungen.")
+        response = session.get(url, timeout=20)
+        print(f"  [{suchbegriff}] HTTP {response.status_code}, {len(response.content)} bytes")
+
+        if response.status_code != 200:
+            print(f"  [{suchbegriff}] HTTP-Fehler {response.status_code}, übersprungen.")
             return []
+
+        preview = response.text[:200].replace("\n", " ")
+        print(f"  [{suchbegriff}] Vorschau: {preview}")
+
+        feed = feedparser.parse(response.content)
+
+        if not feed.entries:
+            print(f"  [{suchbegriff}] Keine Einträge im Feed (bozo={feed.bozo}).")
+            return []
+
         for entry in feed.entries:
             link = getattr(entry, "link", "")
             inserat_id = extrahiere_id(link)
@@ -132,7 +153,7 @@ def scrape_feed(suchbegriff: str) -> list:
     except requests.RequestException as e:
         print(f"  [{suchbegriff}] HTTP-Fehler: {e}")
     except Exception as e:
-        print(f"  [{suchbegriff}] Unbekannter Fehler: {e}")
+        print(f"  [{suchbegriff}] Fehler: {e}")
     return inserate
 
 
@@ -146,9 +167,12 @@ def main():
     alle_neuen = []
     duplikate = 0
 
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
     for begriff in SUCHBEGRIFFE:
-        neue = scrape_feed(begriff)
-        time.sleep(1)
+        neue = scrape_feed(session, begriff)
+        time.sleep(2)
         for ins in neue:
             if ins["id"] in bestehende_ids:
                 duplikate += 1
@@ -156,7 +180,6 @@ def main():
                 alle_neuen.append(ins)
                 bestehende_ids.add(ins["id"])
 
-    grenze = datetime.now(timezone.utc) - timedelta(days=MAX_ALTER_TAGE)
     bestehende_gefiltert = [
         ins for ins in bestehend.get("inserate", [])
         if not ist_zu_alt(ins.get("datum", ""))
