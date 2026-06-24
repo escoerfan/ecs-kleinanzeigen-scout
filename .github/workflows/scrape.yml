@@ -1,0 +1,35 @@
+name: Kleinanzeigen Scout
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencies installieren
+        run: pip install -r requirements.txt
+
+      - name: Scraper ausführen
+        run: python scraper.py
+
+      - name: Änderungen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add angebote.json
+          if git diff --staged --quiet; then
+            echo "Keine neuen Inserate, kein Commit nötig."
+          else
+            git commit -m "Scout: Inserate aktualisiert $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
