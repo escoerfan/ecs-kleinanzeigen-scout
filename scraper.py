@@ -22,8 +22,23 @@ SUCHBEGRIFFE = [
 ]
 
 BASE_URL = "https://www.kleinanzeigen.de"
-# HTML-Suchseite in der Kategorie Nutzfahrzeuge
 SEARCH_TEMPLATE = "https://www.kleinanzeigen.de/s-nutzfahrzeuge-anhaenger/{term}/k0c215"
+
+# Titel-Blacklist: Inserate die diese Wörter enthalten werden ignoriert
+BLACKLIST = [
+    "mieten", "vermieten", "vermietung", "miete", "mietwagen",
+    "modell", "spielzeug", "modellauto", "miniatur", "miniatür",
+    "gemälde", "gemalde", "bild ", "poster", "druck", "foto",
+    "buch", "literatur", "roman",
+    "aufkleber", "sticker", "pin ", "anstecker",
+    "fahrschule", "führerschein", "fuhrerschein",
+    "lego", "playmobil", "märklin", "marklin",
+    "t-shirt", "tasse", "kalender",
+    "gutschein", "ticket",
+]
+
+# Mindestpreis in € — darunter ist es vermutlich kein echtes Nutzfahrzeug
+MINDESTPREIS = 500
 
 DATA_FILE = Path("angebote.json")
 MAX_ALTER_TAGE = 7
@@ -51,6 +66,35 @@ def search_url(suchbegriff: str) -> str:
 def extrahiere_preis(text: str) -> str:
     match = re.search(r"([\d.,]+\s*€)", text)
     return match.group(1).strip() if match else ""
+
+
+def preis_als_zahl(preis_str: str) -> float:
+    """Konvertiert '15.000 €' → 15000.0, gibt 0 zurück wenn nicht parsbar."""
+    if not preis_str:
+        return 0.0
+    zahl = re.sub(r"[^\d,.]", "", preis_str).replace(".", "").replace(",", ".")
+    try:
+        return float(zahl)
+    except ValueError:
+        return 0.0
+
+
+def ist_relevant(inserat: dict) -> bool:
+    """Gibt False zurück wenn das Inserat irrelevant ist."""
+    titel_lower = inserat.get("titel", "").lower()
+    beschreibung_lower = inserat.get("beschreibung", "").lower()
+
+    # Blacklist-Check auf Titel und Beschreibung
+    for wort in BLACKLIST:
+        if wort in titel_lower or wort in beschreibung_lower:
+            return False
+
+    # Preis-Check: wenn Preis bekannt und unter Mindestpreis → irrelevant
+    preis = preis_als_zahl(inserat.get("preis", ""))
+    if preis > 0 and preis < MINDESTPREIS:
+        return False
+
+    return True
 
 
 def strip_html(text: str) -> str:
@@ -224,10 +268,15 @@ def main():
 
     session = init_session()
 
+    gefiltert_gesamt = 0
+
     for begriff in SUCHBEGRIFFE:
         neue = scrape_seite(session, begriff)
         time.sleep(3)
         for ins in neue:
+            if not ist_relevant(ins):
+                gefiltert_gesamt += 1
+                continue
             if ins["id"] in bestehende_ids:
                 duplikate += 1
             else:
@@ -252,6 +301,7 @@ def main():
 
     print(f"\n--- Ergebnis ---")
     print(f"Neue Inserate gefunden:   {len(alle_neuen)}")
+    print(f"Irrelevant gefiltert:     {gefiltert_gesamt}")
     print(f"Duplikate gefiltert:      {duplikate}")
     print(f"Inserate gesamt in JSON:  {len(inserate_gesamt)}")
     print(f"Gespeichert in {DATA_FILE}")
