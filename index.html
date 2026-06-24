@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECS Kleinanzeigen Scout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #111110;
+    --bg2:     #1A1917;
+    --bg3:     #222120;
+    --border:  rgba(255,255,255,0.08);
+    --text:    #F2F0EB;
+    --text2:   rgba(242,240,235,0.62);
+    --text3:   rgba(242,240,235,0.38);
+    --eyebrow: rgba(242,240,235,0.45);
+    --gold-grad: linear-gradient(90deg, #C4933F 0%, #E8BE72 40%, #F5D898 70%, #E8BE72 100%);
+    --red:     #E30613;
+    --radius:  6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    height: 100px;
+    width: auto;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .header-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .header-spacer { flex: 1; }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN WRAPPER ── */
+  .main {
+    padding: 20px 24px 40px;
+    max-width: 100%;
+  }
+
+  /* ── KPI ROW ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold-grad);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  /* ── TIMESTAMP ── */
+  .timestamp-bar {
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  /* ── TOP ROW (filter + refresh) ── */
+  .top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    flex: 1;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+
+  .pill {
+    flex-shrink: 0;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+
+  .pill:hover { color: var(--text); }
+
+  .pill.active {
+    border-color: #C4933F;
+    color: #E8BE72;
+  }
+
+  .refresh-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    border: 1px solid #C4933F;
+    background: transparent;
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+
+  .refresh-btn:hover {
+    background: var(--gold-grad);
+    color: #111110;
+    border-color: transparent;
+  }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .spalte {
+    flex-shrink: 0;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .spalte-header {
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+  }
+
+  .spalte-count {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.8;
+    background: rgba(0,0,0,0.25);
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  /* Spalten-Farben */
+  .spalte-0 .spalte-header { background: #2A2926; border: 1px solid #7A7870; color: #C8C4BC; }
+  .spalte-1 .spalte-header { background: #0A4A3A; border: 1px solid #5DCAA5; color: #5DCAA5; }
+  .spalte-2 .spalte-header { background: #0C3A6E; border: 1px solid #6EB0F0; color: #6EB0F0; }
+  .spalte-3 .spalte-header { background: #3D2200; border: 1px solid #D4900A; color: #D4900A; }
+  .spalte-4 .spalte-header { background: #3A2A0A; border: 1px solid #C4933F; color: #C4933F; }
+  .spalte-5 .spalte-header { background: #4A0A0C; border: 1px solid #E30613; color: #E30613; }
+
+  .karten-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+  }
+
+  /* ── KARTE ── */
+  .karte {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .karte:hover { border-color: rgba(255,255,255,0.18); }
+
+  .karte.hidden { display: none; }
+
+  .karte-bild-wrap {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: #1E1D1C;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .karte-bild-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .karte-kein-bild {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .karte-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    color: var(--text3);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .karte-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .karte-titel {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.35;
+  }
+
+  .karte-preis {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .karte-preis.anfrage {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text3);
+  }
+
+  .karte-meta {
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .karte-meta-sep { opacity: 0.4; }
+
+  .karte-beschreibung {
+    font-size: 11px;
+    color: var(--text2);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+  }
+
+  .karte-link {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    text-align: center;
+    border: 1px solid #C4933F;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .karte-link:hover {
+    background: var(--gold-grad);
+    color: #111110;
+    border-color: transparent;
+  }
+
+  .karte-status {
+    width: 100%;
+    padding: 5px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text2);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(242,240,235,0.38)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+  }
+
+  .karte-status:focus { outline: none; border-color: #C4933F; }
+
+  /* ── ERROR STATE ── */
+  .error-box {
+    background: #2A0A0C;
+    border: 1px solid #E30613;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 24px 0;
+    color: #F0AAAA;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .error-box strong { color: var(--text); display: block; margin-bottom: 8px; font-size: 15px; }
+
+  /* ── LOADING ── */
+  .loading {
+    color: var(--text3);
+    font-size: 13px;
+    padding: 40px 0;
+    text-align: center;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .kpi-row { grid-template-columns: 1fr; }
+    .header { padding: 12px 16px; }
+    .header-logo { height: 64px; }
+    .main { padding: 14px 16px 40px; }
+    .spalte { width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <img class="header-logo"
+       src="https://raw.githubusercontent.com/escoerfan/Designs-ECS/main/5.png"
+       alt="ECS GmbH Logo">
+  <span class="header-title">Kleinanzeigen Scout</span>
+  <div class="header-spacer"></div>
+  <div class="live-dot"></div>
+</header>
+
+<main class="main">
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Gesamt Inserate</div>
+      <div class="kpi-value" id="kpi-gesamt">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Neu heute</div>
+      <div class="kpi-value" id="kpi-heute">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Interessant markiert</div>
+      <div class="kpi-value" id="kpi-interessant">—</div>
+    </div>
+  </div>
+
+  <div class="timestamp-bar" id="timestamp-bar">Lade Daten…</div>
+
+  <div class="top-row">
+    <div class="filter-scroll" id="filter-row"></div>
+    <button class="refresh-btn" onclick="ladeAngebote()">Daten laden</button>
+  </div>
+
+  <div id="content">
+    <div class="loading">Lade Inserate…</div>
+  </div>
+
+</main>
+
+<script>
+const SPALTEN = [
+  { id: 0, name: "Neu / Ungeprüft" },
+  { id: 1, name: "Interessant / Prüfen" },
+  { id: 2, name: "Kontaktiert" },
+  { id: 3, name: "Angebot gemacht" },
+  { id: 4, name: "Gekauft" },
+  { id: 5, name: "Abgelehnt" },
+];
+
+const STATUS_OPTIONEN = [
+  "Neu / Ungeprüft",
+  "Interessant / Prüfen",
+  "Kontaktiert",
+  "Angebot gemacht",
+  "Gekauft",
+  "Abgelehnt",
+];
+
+let alleInserate = [];
+let aktiverFilter = "Alle";
+
+function statusKey(id) { return `ecs_status_${id}`; }
+
+function getStatus(id) {
+  return localStorage.getItem(statusKey(id)) || "Neu / Ungeprüft";
+}
+
+function setStatus(id, status) {
+  localStorage.setItem(statusKey(id), status);
+}
+
+function formatDatum(isoStr) {
+  if (!isoStr) return "";
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" });
+  } catch { return ""; }
+}
+
+function istHeute(isoStr) {
+  if (!isoStr) return false;
+  try {
+    const d = new Date(isoStr);
+    const heute = new Date();
+    return d.getFullYear() === heute.getFullYear()
+      && d.getMonth() === heute.getMonth()
+      && d.getDate() === heute.getDate();
+  } catch { return false; }
+}
+
+function baueKarte(ins) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "karte";
+  wrapper.dataset.id = ins.id;
+  wrapper.dataset.kategorie = ins.kategorie || "";
+
+  const bildHtml = ins.bild
+    ? `<img src="${escapeHtml(ins.bild)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'karte-kein-bild\\'>Kein Bild</div>'">`
+    : `<div class="karte-kein-bild">Kein Bild</div>`;
+
+  const badgeHtml = ins.kategorie
+    ? `<div class="karte-badge">${escapeHtml(ins.kategorie)}</div>`
+    : "";
+
+  const preisHtml = ins.preis
+    ? `<div class="karte-preis">${escapeHtml(ins.preis)}</div>`
+    : `<div class="karte-preis anfrage">Preis auf Anfrage</div>`;
+
+  const metaParts = [];
+  if (ins.ort) metaParts.push(escapeHtml(ins.ort));
+  if (ins.datum) metaParts.push(formatDatum(ins.datum));
+  const metaHtml = metaParts.join('<span class="karte-meta-sep">·</span>');
+
+  const statusVal = getStatus(ins.id);
+  const optionenHtml = STATUS_OPTIONEN.map(opt =>
+    `<option value="${escapeHtml(opt)}" ${opt === statusVal ? "selected" : ""}>${escapeHtml(opt)}</option>`
+  ).join("");
+
+  wrapper.innerHTML = `
+    <div class="karte-bild-wrap">
+      ${bildHtml}
+      ${badgeHtml}
+    </div>
+    <div class="karte-body">
+      <div class="karte-titel">${escapeHtml(ins.titel || "Kein Titel")}</div>
+      ${preisHtml}
+      <div class="karte-meta">${metaHtml}</div>
+      <div class="karte-beschreibung">${escapeHtml(ins.beschreibung || "")}</div>
+      <a class="karte-link" href="${escapeHtml(ins.link || "#")}" target="_blank" rel="noopener">Inserat öffnen</a>
+      <select class="karte-status" data-id="${escapeHtml(ins.id)}" onchange="statusGeaendert(this)">
+        ${optionenHtml}
+      </select>
+    </div>
+  `;
+
+  return wrapper;
+}
+
+function statusGeaendert(select) {
+  const id = select.dataset.id;
+  const neuerStatus = select.value;
+  setStatus(id, neuerStatus);
+  renderPipeline();
+  aktualisiereKPIs();
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderPipeline() {
+  const container = document.getElementById("content");
+  container.innerHTML = "";
+
+  const pipeline = document.createElement("div");
+  pipeline.className = "pipeline";
+
+  SPALTEN.forEach(spalte => {
+    const col = document.createElement("div");
+    col.className = `spalte spalte-${spalte.id}`;
+
+    const gefilterte = alleInserate.filter(ins => {
+      const status = getStatus(ins.id);
+      return status === spalte.name;
+    });
+
+    const sichtbare = aktiverFilter === "Alle"
+      ? gefilterte
+      : gefilterte.filter(ins => ins.kategorie === aktiverFilter);
+
+    const header = document.createElement("div");
+    header.className = "spalte-header";
+    header.innerHTML = `
+      <span>${escapeHtml(spalte.name)}</span>
+      <span class="spalte-count">${sichtbare.length}</span>
+    `;
+    col.appendChild(header);
+
+    const kartenBox = document.createElement("div");
+    kartenBox.className = "karten-container";
+
+    gefilterte.forEach(ins => {
+      const karte = baueKarte(ins);
+      if (aktiverFilter !== "Alle" && ins.kategorie !== aktiverFilter) {
+        karte.classList.add("hidden");
+      }
+      kartenBox.appendChild(karte);
+    });
+
+    col.appendChild(kartenBox);
+    pipeline.appendChild(col);
+  });
+
+  container.appendChild(pipeline);
+}
+
+function renderFilter(kategorien) {
+  const row = document.getElementById("filter-row");
+  row.innerHTML = "";
+
+  const alle = document.createElement("button");
+  alle.className = "pill" + (aktiverFilter === "Alle" ? " active" : "");
+  alle.textContent = "Alle";
+  alle.onclick = () => filterSetzen("Alle");
+  row.appendChild(alle);
+
+  kategorien.forEach(kat => {
+    const btn = document.createElement("button");
+    btn.className = "pill" + (aktiverFilter === kat ? " active" : "");
+    btn.textContent = kat;
+    btn.onclick = () => filterSetzen(kat);
+    row.appendChild(btn);
+  });
+}
+
+function filterSetzen(kat) {
+  aktiverFilter = kat;
+  const kategorien = [...new Set(alleInserate.map(i => i.kategorie).filter(Boolean))].sort();
+  renderFilter(kategorien);
+  renderPipeline();
+}
+
+function aktualisiereKPIs() {
+  document.getElementById("kpi-gesamt").textContent = alleInserate.length;
+
+  const heute = alleInserate.filter(ins => istHeute(ins.datum)).length;
+  document.getElementById("kpi-heute").textContent = heute;
+
+  const interessant = alleInserate.filter(ins =>
+    getStatus(ins.id) === "Interessant / Prüfen"
+  ).length;
+  document.getElementById("kpi-interessant").textContent = interessant;
+}
+
+async function ladeAngebote() {
+  const content = document.getElementById("content");
+  content.innerHTML = '<div class="loading">Lade Inserate…</div>';
+  document.getElementById("timestamp-bar").textContent = "Lade Daten…";
+
+  try {
+    const res = await fetch("angebote.json?t=" + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    alleInserate = data.inserate || [];
+
+    const ts = data.aktualisiert
+      ? new Date(data.aktualisiert).toLocaleString("de-DE")
+      : "unbekannt";
+    document.getElementById("timestamp-bar").textContent =
+      `Zuletzt aktualisiert: ${ts}`;
+
+    const kategorien = [...new Set(alleInserate.map(i => i.kategorie).filter(Boolean))].sort();
+    renderFilter(kategorien);
+    renderPipeline();
+    aktualisiereKPIs();
+
+  } catch (err) {
+    document.getElementById("timestamp-bar").textContent = "Fehler beim Laden.";
+    content.innerHTML = `
+      <div class="error-box">
+        <strong>Daten konnten nicht geladen werden</strong>
+        Stelle sicher, dass GitHub Pages auf dem <code>main</code>-Branch aktiviert ist
+        und die Datei <code>angebote.json</code> im Repository vorhanden ist.<br><br>
+        Beim lokalen Testen ohne Server ist <code>fetch()</code> blockiert.
+        Öffne die Seite über GitHub Pages oder einen lokalen HTTP-Server
+        (z.B. <code>python3 -m http.server</code>).<br><br>
+        <span style="color:var(--text3);font-size:11px">Fehlerdetail: ${escapeHtml(String(err))}</span>
+      </div>
+    `;
+    document.getElementById("kpi-gesamt").textContent = "—";
+    document.getElementById("kpi-heute").textContent = "—";
+    document.getElementById("kpi-interessant").textContent = "—";
+  }
+}
+
+ladeAngebote();
+</script>
+</body>
+</html>
