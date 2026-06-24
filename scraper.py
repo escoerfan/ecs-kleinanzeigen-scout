@@ -21,6 +21,7 @@ SUCHBEGRIFFE = [
     "Pritschenwagen",
 ]
 
+BASE_URL = "https://www.kleinanzeigen.de"
 RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-{term}/k0.rss"
 
 DATA_FILE = Path("angebote.json")
@@ -113,26 +114,45 @@ def ist_zu_alt(datum_str: str) -> bool:
         return False
 
 
+def init_session() -> requests.Session:
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    try:
+        print("  Hole Session-Cookie von Startseite...")
+        r = session.get(BASE_URL, timeout=15)
+        print(f"  Startseite: HTTP {r.status_code}, Cookies: {dict(session.cookies)}")
+        time.sleep(2)
+
+        search_page = f"{BASE_URL}/s-nutzfahrzeuge-anhaenger/k0c215"
+        r2 = session.get(search_page, timeout=15)
+        print(f"  Suchseite: HTTP {r2.status_code}")
+        time.sleep(2)
+    except Exception as e:
+        print(f"  Warnung beim Session-Init: {e}")
+    return session
+
+
 def scrape_feed(session: requests.Session, suchbegriff: str) -> list:
     url = rss_url(suchbegriff)
     print(f"  [{suchbegriff}] URL: {url}")
     inserate = []
     try:
+        session.headers.update({"Referer": f"{BASE_URL}/s-nutzfahrzeuge-anhaenger/k0c215"})
         response = session.get(url, timeout=20)
         print(f"  [{suchbegriff}] HTTP {response.status_code}, {len(response.content)} bytes")
 
         if response.status_code != 200:
-            body_preview = response.text[:300].replace("\n", " ")
-            print(f"  [{suchbegriff}] HTTP-Fehler {response.status_code}: {body_preview}")
+            body_preview = response.text[:200].replace("\n", " ")
+            print(f"  [{suchbegriff}] Fehler: {body_preview}")
             return []
 
-        preview = response.text[:200].replace("\n", " ")
+        preview = response.text[:150].replace("\n", " ")
         print(f"  [{suchbegriff}] Vorschau: {preview}")
 
         feed = feedparser.parse(response.content)
 
         if not feed.entries:
-            print(f"  [{suchbegriff}] Keine Einträge im Feed (bozo={feed.bozo}).")
+            print(f"  [{suchbegriff}] Keine Einträge (bozo={feed.bozo}).")
             return []
 
         for entry in feed.entries:
@@ -168,12 +188,11 @@ def main():
     alle_neuen = []
     duplikate = 0
 
-    session = requests.Session()
-    session.headers.update(HEADERS)
+    session = init_session()
 
     for begriff in SUCHBEGRIFFE:
         neue = scrape_feed(session, begriff)
-        time.sleep(2)
+        time.sleep(3)
         for ins in neue:
             if ins["id"] in bestehende_ids:
                 duplikate += 1
