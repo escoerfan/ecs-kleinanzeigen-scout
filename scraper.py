@@ -5,8 +5,8 @@ import urllib.parse
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-import feedparser
 import requests
+from bs4 import BeautifulSoup
 
 SUCHBEGRIFFE = [
     "Reisebus",
@@ -22,7 +22,8 @@ SUCHBEGRIFFE = [
 ]
 
 BASE_URL = "https://www.kleinanzeigen.de"
-RSS_TEMPLATE = "https://www.kleinanzeigen.de/s-{term}/k0.rss"
+# HTML-Suchseite in der Kategorie Nutzfahrzeuge
+SEARCH_TEMPLATE = "https://www.kleinanzeigen.de/s-nutzfahrzeuge-anhaenger/{term}/k0c215"
 
 DATA_FILE = Path("angebote.json")
 MAX_ALTER_TAGE = 7
@@ -33,7 +34,7 @@ HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
     "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
@@ -42,53 +43,24 @@ HEADERS = {
 }
 
 
-def rss_url(suchbegriff: str) -> str:
+def search_url(suchbegriff: str) -> str:
     term = suchbegriff.lower().replace(" ", "-")
-    return RSS_TEMPLATE.format(term=urllib.parse.quote(term, safe="-"))
+    return SEARCH_TEMPLATE.format(term=urllib.parse.quote(term, safe="-"))
 
 
-def extrahiere_preis(description: str) -> str:
-    match = re.search(r"Preis:\s*([\d.,]+\s*€)", description)
-    if match:
-        return match.group(1).strip()
-    match = re.search(r"([\d.,]+\s*€)", description)
-    if match:
-        return match.group(1).strip()
-    return ""
-
-
-def extrahiere_ort(description: str) -> str:
-    match = re.search(r"Ort:\s*([^\n<]+)", description)
-    if match:
-        return match.group(1).strip()
-    return ""
-
-
-def extrahiere_bild(description: str) -> str:
-    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', description)
-    if match:
-        return match.group(1).strip()
-    return ""
+def extrahiere_preis(text: str) -> str:
+    match = re.search(r"([\d.,]+\s*€)", text)
+    return match.group(1).strip() if match else ""
 
 
 def strip_html(text: str) -> str:
     text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def extrahiere_id(link: str) -> str:
-    match = re.search(r"/(\d+)(?:\.html)?$", link)
-    if match:
-        return match.group(1)
-    return link.split("/")[-1]
-
-
-def parse_datum(entry) -> str:
-    if hasattr(entry, "published_parsed") and entry.published_parsed:
-        dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-        return dt.isoformat()
-    return datetime.now(timezone.utc).isoformat()
+    match = re.search(r"/(\d+)(?:-\d+-\d+-\d+)?(?:\.html)?$", link)
+    return match.group(1) if match else link.split("/")[-1]
 
 
 def lade_bestehende() -> dict:
@@ -97,7 +69,7 @@ def lade_bestehende() -> dict:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            print(f"Warnung: Konnte {DATA_FILE} nicht lesen: {e}")
+            print(f"Warnung: {e}")
     return {"aktualisiert": "", "anzahl": 0, "inserate": []}
 
 
@@ -108,8 +80,7 @@ def ist_zu_alt(datum_str: str) -> bool:
         dt = datetime.fromisoformat(datum_str.replace("Z", "+00:00"))
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
-        grenze = datetime.now(timezone.utc) - timedelta(days=MAX_ALTER_TAGE)
-        return dt < grenze
+        return dt < datetime.now(timezone.utc) - timedelta(days=MAX_ALTER_TAGE)
     except Exception:
         return False
 
@@ -118,64 +89,127 @@ def init_session() -> requests.Session:
     session = requests.Session()
     session.headers.update(HEADERS)
     try:
-        print("  Hole Session-Cookie von Startseite...")
+        print("  Starte Session...")
         r = session.get(BASE_URL, timeout=15)
-        print(f"  Startseite: HTTP {r.status_code}, Cookies: {dict(session.cookies)}")
+        print(f"  Startseite: HTTP {r.status_code}")
         time.sleep(2)
-
-        search_page = f"{BASE_URL}/s-nutzfahrzeuge-anhaenger/k0c215"
-        r2 = session.get(search_page, timeout=15)
-        print(f"  Suchseite: HTTP {r2.status_code}")
+        r2 = session.get(f"{BASE_URL}/s-nutzfahrzeuge-anhaenger/k0c215", timeout=15)
+        print(f"  Kategorieseite: HTTP {r2.status_code}")
         time.sleep(2)
     except Exception as e:
-        print(f"  Warnung beim Session-Init: {e}")
+        print(f"  Session-Init Warnung: {e}")
     return session
 
 
-def scrape_feed(session: requests.Session, suchbegriff: str) -> list:
-    url = rss_url(suchbegriff)
-    print(f"  [{suchbegriff}] URL: {url}")
+def parse_inserate(html: str, suchbegriff: str) -> list:
+    soup = BeautifulSoup(html, "lxml")
     inserate = []
+
+    # Kleinanzeigen verwendet <article> Tags mit data-adid
+    articles = soup.find_all("article", attrs={"data-adid": True})
+
+    if not articles:
+        # Fallback: alle article Tags
+        articles = soup.find_all("article")
+
+    print(f"    {len(articles)} article-Elemente gefunden.")
+
+    if not articles:
+        # Debug: erste 500 Zeichen HTML ausgeben
+        print(f"    HTML-Vorschau: {html[:500].replace(chr(10), ' ')}")
+
+    for art in articles:
+        try:
+            adid = art.get("data-adid", "")
+
+            # Titel + Link
+            link_tag = art.find("a", href=re.compile(r"/s-anzeige/"))
+            if not link_tag:
+                link_tag = art.find("a", href=True)
+            titel = link_tag.get_text(strip=True) if link_tag else ""
+            href = link_tag["href"] if link_tag else ""
+            link = href if href.startswith("http") else BASE_URL + href
+            inserat_id = adid or extrahiere_id(link)
+
+            # Preis
+            preis_tag = art.find(class_=re.compile(r"price|preis", re.I))
+            preis = preis_tag.get_text(strip=True) if preis_tag else ""
+            if not preis:
+                preis = extrahiere_preis(art.get_text())
+
+            # Ort
+            ort_tag = art.find(class_=re.compile(r"locality|location|ort", re.I))
+            ort = ort_tag.get_text(strip=True) if ort_tag else ""
+
+            # Datum
+            datum_tag = art.find("time") or art.find(class_=re.compile(r"date|datum|zeit", re.I))
+            datum_raw = ""
+            if datum_tag:
+                datum_raw = datum_tag.get("datetime", datum_tag.get_text(strip=True))
+            datum_iso = datetime.now(timezone.utc).isoformat()
+            if datum_raw:
+                try:
+                    # Kleinanzeigen zeigt oft "Heute, 14:30" oder ISO
+                    if "T" in datum_raw or "-" in datum_raw:
+                        dt = datetime.fromisoformat(datum_raw.replace("Z", "+00:00"))
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        datum_iso = dt.isoformat()
+                except Exception:
+                    pass
+
+            # Bild
+            img_tag = art.find("img", src=True)
+            bild = ""
+            if img_tag:
+                bild = img_tag.get("src", "") or img_tag.get("data-src", "")
+
+            # Beschreibung
+            desc_tag = art.find(class_=re.compile(r"desc|beschreibung|text", re.I))
+            beschreibung = desc_tag.get_text(strip=True)[:300] if desc_tag else ""
+
+            if not titel:
+                continue
+
+            inserate.append({
+                "id": inserat_id,
+                "titel": titel,
+                "preis": preis,
+                "ort": ort,
+                "datum": datum_iso,
+                "link": link,
+                "kategorie": suchbegriff,
+                "bild": bild,
+                "beschreibung": beschreibung,
+            })
+        except Exception as e:
+            print(f"    Parse-Fehler bei einem Inserat: {e}")
+            continue
+
+    return inserate
+
+
+def scrape_seite(session: requests.Session, suchbegriff: str) -> list:
+    url = search_url(suchbegriff)
+    print(f"  [{suchbegriff}] URL: {url}")
     try:
         session.headers.update({"Referer": f"{BASE_URL}/s-nutzfahrzeuge-anhaenger/k0c215"})
         response = session.get(url, timeout=20)
         print(f"  [{suchbegriff}] HTTP {response.status_code}, {len(response.content)} bytes")
 
         if response.status_code != 200:
-            body_preview = response.text[:200].replace("\n", " ")
-            print(f"  [{suchbegriff}] Fehler: {body_preview}")
+            print(f"  [{suchbegriff}] Fehler, übersprungen.")
             return []
 
-        preview = response.text[:150].replace("\n", " ")
-        print(f"  [{suchbegriff}] Vorschau: {preview}")
+        inserate = parse_inserate(response.text, suchbegriff)
+        print(f"  [{suchbegriff}] {len(inserate)} Inserate extrahiert.")
+        return inserate
 
-        feed = feedparser.parse(response.content)
-
-        if not feed.entries:
-            print(f"  [{suchbegriff}] Keine Einträge (bozo={feed.bozo}).")
-            return []
-
-        for entry in feed.entries:
-            link = getattr(entry, "link", "")
-            inserat_id = extrahiere_id(link)
-            description = getattr(entry, "description", "") or ""
-            inserate.append({
-                "id": inserat_id,
-                "titel": getattr(entry, "title", "").strip(),
-                "preis": extrahiere_preis(description),
-                "ort": extrahiere_ort(description),
-                "datum": parse_datum(entry),
-                "link": link,
-                "kategorie": suchbegriff,
-                "bild": extrahiere_bild(description),
-                "beschreibung": strip_html(description)[:300],
-            })
-        print(f"  [{suchbegriff}] {len(inserate)} Inserate gefunden.")
     except requests.RequestException as e:
         print(f"  [{suchbegriff}] HTTP-Fehler: {e}")
     except Exception as e:
         print(f"  [{suchbegriff}] Fehler: {e}")
-    return inserate
+    return []
 
 
 def main():
@@ -191,7 +225,7 @@ def main():
     session = init_session()
 
     for begriff in SUCHBEGRIFFE:
-        neue = scrape_feed(session, begriff)
+        neue = scrape_seite(session, begriff)
         time.sleep(3)
         for ins in neue:
             if ins["id"] in bestehende_ids:
