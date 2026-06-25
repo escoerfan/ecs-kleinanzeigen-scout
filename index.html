@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECS Kleinanzeigen Scout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0e0d0b;
+  --bg2:       #161410;
+  --bg3:       #1e1c18;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --text:      #FFFFFF;
+  --text2:     rgba(255,255,255,0.65);
+  --text3:     rgba(255,255,255,0.40);
+  --gold:      #C4933F;
+  --gold2:     #E8BE72;
+  --gold-grad: linear-gradient(90deg, #C4933F 0%, #E8BE72 40%, #F5D898 70%, #E8BE72 100%);
+  --red:       #E30613;
+  --r:         8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background:
+    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(196,147,63,0.055) 0%, transparent 60%),
+    linear-gradient(175deg, #18150f 0%, #0c0b08 45%, #0f0e0c 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(14,13,11,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 68px;
+}
+
+.header-logo { height: 48px; width: auto; flex-shrink: 0; display: block; }
+
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+.header-spacer { flex: 1; }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.refresh-btn {
+  padding: 7px 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(196,147,63,0.5);
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.refresh-btn:hover { background: var(--gold-grad); color: #0e0d0b; border-color: transparent; }
+
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 2px rgba(227,6,19,0.22);
+}
+
+/* ── MAIN ── */
+.main { padding: 22px 28px 80px; }
+
+/* ── KPI ROW ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+  max-width: 600px;
+}
+
+.kpi-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 18px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold-grad);
+}
+.kpi-label {
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 400;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ts-label {
+  font-size: 11px;
+  color: var(--text3);
+  flex-shrink: 0;
+  font-weight: 400;
+}
+
+.filter-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+}
+.filter-scroll::-webkit-scrollbar { display: none; }
+
+.pill {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text3);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.pill:hover { color: var(--text2); border-color: var(--border2); }
+.pill.active { border-color: var(--gold); color: var(--gold2); background: rgba(196,147,63,0.09); }
+
+/* ── PIPELINE ── */
+.pipeline-outer {
+  overflow-x: auto;
+  padding-bottom: 20px;
+  min-height: calc(100vh - 280px);
+}
+.pipeline-outer::-webkit-scrollbar { height: 4px; }
+.pipeline-outer::-webkit-scrollbar-track { background: transparent; }
+.pipeline-outer::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.pipeline {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: fit-content;
+  min-width: 100%;
+  justify-content: center;
+}
+
+/* ── SPALTE ── */
+.spalte {
+  flex-shrink: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(22,20,16,0.6);
+}
+
+.spalte-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.spalte-0 .spalte-header { background: rgba(30,28,24,0.9); color: rgba(255,255,255,0.75); border-bottom: 1px solid rgba(255,255,255,0.1); }
+.spalte-1 .spalte-header { background: rgba(10,40,28,0.9); color: #4DBF96; border-bottom: 1px solid rgba(77,191,150,0.2); }
+.spalte-2 .spalte-header { background: rgba(10,28,55,0.9); color: #5AA3E8; border-bottom: 1px solid rgba(90,163,232,0.2); }
+.spalte-3 .spalte-header { background: rgba(32,20,0,0.9); color: #CC8A0A; border-bottom: 1px solid rgba(204,138,10,0.2); }
+.spalte-4 .spalte-header { background: rgba(28,20,5,0.9); color: #C4933F; border-bottom: 1px solid rgba(196,147,63,0.2); }
+.spalte-5 .spalte-header { background: rgba(34,6,8,0.9); color: #D94050; border-bottom: 1px solid rgba(217,64,80,0.2); }
+
+.spalte-label { display: flex; align-items: center; gap: 8px; }
+.spalte-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.spalte-0 .spalte-dot { background: rgba(255,255,255,0.6); }
+.spalte-1 .spalte-dot { background: #4DBF96; }
+.spalte-2 .spalte-dot { background: #5AA3E8; }
+.spalte-3 .spalte-dot { background: #CC8A0A; }
+.spalte-4 .spalte-dot { background: #C4933F; }
+.spalte-5 .spalte-dot { background: #D94050; }
+
+.spalte-count {
+  font-size: 11px;
+  font-weight: 400;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.35);
+  letter-spacing: 0;
+}
+
+/* Drop Zone */
+.karten-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(0,0,0,0.25);
+  padding: 6px;
+  min-height: 80px;
+  transition: background 0.15s;
+}
+
+.karten-container.drag-over {
+  background: rgba(196,147,63,0.07);
+  outline: 1px dashed rgba(196,147,63,0.35);
+  outline-offset: -4px;
+  border-radius: 4px;
+}
+
+.drop-hint {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(196,147,63,0.45);
+  padding: 12px;
+  text-align: center;
+}
+.karten-container.drag-over .drop-hint { display: flex; }
+
+/* ── KARTE ── */
+.karte {
+  background: var(--bg2);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: opacity 0.15s, box-shadow 0.15s, transform 0.12s;
+  cursor: grab;
+  position: relative;
+  border: 1px solid transparent;
+}
+.karte:active { cursor: grabbing; }
+.karte.dragging {
+  opacity: 0.3;
+  transform: scale(0.97);
+}
+.karte:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  border-color: var(--border);
+}
+.karte.hidden { display: none; }
+
+/* Drag Handle */
+.drag-handle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
+  cursor: grab;
+  background: rgba(0,0,0,0.5);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+.karte:hover .drag-handle { opacity: 1; }
+.drag-handle svg { display: block; }
+
+/* Bild */
+.karte-bild-wrap {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  overflow: hidden;
+  background: var(--bg3);
+}
+.karte-bild-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  transition: transform 0.35s;
+}
+.karte:hover .karte-bild-wrap img { transform: scale(1.04); }
+
+.karte-kein-bild {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--text3); gap: 6px;
+}
+
+.karte-badge {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.65);
+  color: var(--text2);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Karte Body */
+.karte-body {
+  padding: 11px 13px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.karte-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.karte-titel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.karte-preis {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gold2);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.karte-preis.anfrage {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text3);
+}
+
+.karte-meta {
+  font-size: 10px;
+  color: var(--text3);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.karte-meta-sep { opacity: 0.3; }
+.karte-fahrzeug { color: var(--text2); font-weight: 500; }
+
+.karte-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.karte-link {
+  flex: 1;
+  padding: 6px 10px;
+  text-align: center;
+  border: 1px solid rgba(196,147,63,0.35);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.karte-link:hover { background: var(--gold-grad); color: #0e0d0b; border-color: transparent; }
+
+.karte-status {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text3);
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(240,237,230,0.28)' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  padding-right: 22px;
+}
+.karte-status:focus { outline: none; border-color: var(--gold); }
+
+/* ── ERROR / LOADING ── */
+.error-box {
+  background: rgba(34,6,8,0.8);
+  border: 1px solid rgba(227,6,19,0.35);
+  border-radius: var(--r);
+  padding: 22px 26px;
+  margin: 28px 0;
+  color: rgba(240,170,170,0.85);
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 560px;
+}
+.error-box strong { color: var(--text); display: block; margin-bottom: 8px; font-size: 15px; }
+
+.loading {
+  color: var(--text3);
+  font-size: 13px;
+  padding: 80px 0;
+  text-align: center;
+  font-weight: 400;
+}
+
+.spalte-leer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 24px 12px;
+  opacity: 0.45;
+  text-align: center;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; max-width: 100%; }
+  .kpi-row .kpi-card:last-child { grid-column: span 2; }
+  .header { padding: 0 16px; height: 58px; }
+  .header-logo { height: 38px; }
+  .main { padding: 16px 14px 60px; }
+  .spalte { width: 256px; }
+  .header-divider, .header-title { display: none; }
+  .pipeline { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <img class="header-logo"
+       src="https://raw.githubusercontent.com/escoerfan/Designs-ECS/main/5.png"
+       alt="ECS GmbH">
+  <div class="header-divider"></div>
+  <span class="header-title">Kleinanzeigen Scout</span>
+  <div class="header-spacer"></div>
+  <div class="header-right">
+    <button class="refresh-btn" onclick="ladeAngebote()">↻ Aktualisieren</button>
+    <div class="live-dot"></div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Gesamt</div>
+      <div class="kpi-value" id="kpi-gesamt">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Neu heute</div>
+      <div class="kpi-value" id="kpi-heute">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Interessant</div>
+      <div class="kpi-value" id="kpi-interessant">—</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="ts-label" id="timestamp-bar">Lade…</span>
+    <div class="filter-scroll" id="filter-row"></div>
+  </div>
+
+  <div id="content">
+    <div class="loading">Lade Inserate…</div>
+  </div>
+
+</main>
+
+<script>
+const SPALTEN = [
+  { id: 0, name: "Neu / Ungeprüft" },
+  { id: 1, name: "Interessant" },
+  { id: 2, name: "Kontaktiert" },
+  { id: 3, name: "Angebot gemacht" },
+  { id: 4, name: "Gekauft" },
+  { id: 5, name: "Abgelehnt" },
+];
+
+const STATUS_OPTIONEN = SPALTEN.map(s => s.name);
+
+let alleInserate = [];
+let aktiverFilter = "Alle";
+let dragId = null;
+
+function statusKey(id) { return `ecs_status_${id}`; }
+function getStatus(id) { return localStorage.getItem(statusKey(id)) || "Neu / Ungeprüft"; }
+function setStatus(id, status) { localStorage.setItem(statusKey(id), status); }
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function formatDatum(isoStr) {
+  if (!isoStr) return "";
+  try {
+    const d = new Date(isoStr);
+    const heute = new Date();
+    const diff = Math.floor((heute - d) / 86400000);
+    if (diff === 0) return "Heute";
+    if (diff === 1) return "Gestern";
+    return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+  } catch { return ""; }
+}
+
+function istHeute(isoStr) {
+  if (!isoStr) return false;
+  try {
+    const d = new Date(isoStr);
+    const h = new Date();
+    return d.getFullYear() === h.getFullYear() && d.getMonth() === h.getMonth() && d.getDate() === h.getDate();
+  } catch { return false; }
+}
+
+function baueKarte(ins) {
+  const div = document.createElement("div");
+  div.className = "karte";
+  div.dataset.id = ins.id;
+  div.dataset.kategorie = ins.kategorie || "";
+  div.draggable = true;
+
+  const bildHtml = ins.bild
+    ? `<img src="${escapeHtml(ins.bild)}" alt="" loading="lazy"
+         onerror="this.parentElement.innerHTML='<div class=\\'karte-kein-bild\\'>Kein Bild</div>'">`
+    : `<div class="karte-kein-bild">Kein Bild</div>`;
+
+  const badgeHtml = ins.kategorie
+    ? `<div class="karte-badge">${escapeHtml(ins.kategorie)}</div>` : "";
+
+  const preisHtml = ins.preis
+    ? `<div class="karte-preis">${escapeHtml(ins.preis)}</div>`
+    : `<div class="karte-preis anfrage">Auf Anfrage</div>`;
+
+  const metaParts = [];
+  if (ins.ort) metaParts.push(escapeHtml(ins.ort));
+  if (ins.datum) metaParts.push(formatDatum(ins.datum));
+  const metaHtml = metaParts.join('<span class="karte-meta-sep">·</span>');
+
+  const fahrzeugParts = [];
+  if (ins.marke) fahrzeugParts.push(escapeHtml(ins.marke));
+  if (ins.baujahr) fahrzeugParts.push(escapeHtml(ins.baujahr));
+  if (ins.km) fahrzeugParts.push(escapeHtml(ins.km));
+  if (ins.nutzlast) fahrzeugParts.push(escapeHtml(ins.nutzlast));
+  const fahrzeugHtml = fahrzeugParts.join('<span class="karte-meta-sep">·</span>');
+
+  const statusVal = getStatus(ins.id);
+  const optsHtml = STATUS_OPTIONEN.map(o =>
+    `<option value="${escapeHtml(o)}"${o === statusVal ? " selected" : ""}>${escapeHtml(o)}</option>`
+  ).join("");
+
+  div.innerHTML = `
+    <div class="drag-handle">
+      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+        <circle cx="4" cy="3" r="1.2" fill="rgba(240,237,230,0.5)"/>
+        <circle cx="8" cy="3" r="1.2" fill="rgba(240,237,230,0.5)"/>
+        <circle cx="4" cy="6" r="1.2" fill="rgba(240,237,230,0.5)"/>
+        <circle cx="8" cy="6" r="1.2" fill="rgba(240,237,230,0.5)"/>
+        <circle cx="4" cy="9" r="1.2" fill="rgba(240,237,230,0.5)"/>
+        <circle cx="8" cy="9" r="1.2" fill="rgba(240,237,230,0.5)"/>
+      </svg>
+    </div>
+    <div class="karte-bild-wrap">
+      ${bildHtml}
+      ${badgeHtml}
+    </div>
+    <div class="karte-body">
+      <div class="karte-top-row">
+        <div class="karte-titel">${escapeHtml(ins.titel || "Kein Titel")}</div>
+        ${preisHtml}
+      </div>
+      ${fahrzeugHtml ? `<div class="karte-meta karte-fahrzeug">${fahrzeugHtml}</div>` : ""}
+      <div class="karte-meta">${metaHtml}</div>
+      <div class="karte-actions">
+        <a class="karte-link" href="${escapeHtml(ins.link || "#")}" target="_blank" rel="noopener">↗ Öffnen</a>
+        <select class="karte-status" data-id="${escapeHtml(ins.id)}" onchange="statusGeaendert(this)">
+          ${optsHtml}
+        </select>
+      </div>
+    </div>`;
+
+  div.addEventListener("dragstart", e => {
+    dragId = ins.id;
+    div.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", ins.id);
+  });
+  div.addEventListener("dragend", () => {
+    div.classList.remove("dragging");
+    document.querySelectorAll(".karten-container").forEach(c => c.classList.remove("drag-over"));
+  });
+
+  div.querySelector("select").addEventListener("mousedown", e => e.stopPropagation());
+
+  return div;
+}
+
+function statusGeaendert(select) {
+  const id = select.dataset.id;
+  setStatus(id, select.value);
+  renderPipeline();
+  aktualisiereKPIs();
+}
+
+function renderPipeline() {
+  const container = document.getElementById("content");
+  container.innerHTML = "";
+
+  const outer = document.createElement("div");
+  outer.className = "pipeline-outer";
+
+  const pipeline = document.createElement("div");
+  pipeline.className = "pipeline";
+
+  SPALTEN.forEach(spalte => {
+    const col = document.createElement("div");
+    col.className = `spalte spalte-${spalte.id}`;
+
+    const inSpalte = alleInserate.filter(ins => getStatus(ins.id) === spalte.name);
+    const sichtbar = aktiverFilter === "Alle"
+      ? inSpalte : inSpalte.filter(ins => ins.kategorie === aktiverFilter);
+
+    const hdr = document.createElement("div");
+    hdr.className = "spalte-header";
+    hdr.innerHTML = `
+      <div class="spalte-label">
+        <div class="spalte-dot"></div>
+        <span>${escapeHtml(spalte.name)}</span>
+      </div>
+      <span class="spalte-count">${sichtbar.length}</span>`;
+    col.appendChild(hdr);
+
+    const box = document.createElement("div");
+    box.className = "karten-container";
+    box.dataset.spalte = spalte.name;
+
+    box.addEventListener("dragover", e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      document.querySelectorAll(".karten-container").forEach(c => c.classList.remove("drag-over"));
+      box.classList.add("drag-over");
+    });
+    box.addEventListener("dragleave", e => {
+      if (!box.contains(e.relatedTarget)) box.classList.remove("drag-over");
+    });
+    box.addEventListener("drop", e => {
+      e.preventDefault();
+      box.classList.remove("drag-over");
+      const id = e.dataTransfer.getData("text/plain") || dragId;
+      if (!id) return;
+      const neuerStatus = box.dataset.spalte;
+      if (getStatus(id) === neuerStatus) return;
+      setStatus(id, neuerStatus);
+      renderPipeline();
+      aktualisiereKPIs();
+    });
+
+    if (inSpalte.length === 0) {
+      const leer = document.createElement("div");
+      leer.className = "spalte-leer";
+      leer.textContent = "Leer · Hierher ziehen";
+      box.appendChild(leer);
+    } else {
+      inSpalte.forEach(ins => {
+        const karte = baueKarte(ins);
+        if (aktiverFilter !== "Alle" && ins.kategorie !== aktiverFilter) {
+          karte.classList.add("hidden");
+        }
+        box.appendChild(karte);
+      });
+    }
+
+    col.appendChild(box);
+    pipeline.appendChild(col);
+  });
+
+  outer.appendChild(pipeline);
+  container.appendChild(outer);
+}
+
+function renderFilter(kategorien) {
+  const row = document.getElementById("filter-row");
+  row.innerHTML = "";
+  const alle = document.createElement("button");
+  alle.className = "pill" + (aktiverFilter === "Alle" ? " active" : "");
+  alle.textContent = "Alle";
+  alle.onclick = () => filterSetzen("Alle");
+  row.appendChild(alle);
+  kategorien.forEach(kat => {
+    const btn = document.createElement("button");
+    btn.className = "pill" + (aktiverFilter === kat ? " active" : "");
+    btn.textContent = kat;
+    btn.onclick = () => filterSetzen(kat);
+    row.appendChild(btn);
+  });
+}
+
+function filterSetzen(kat) {
+  aktiverFilter = kat;
+  const kategorien = [...new Set(alleInserate.map(i => i.kategorie).filter(Boolean))].sort();
+  renderFilter(kategorien);
+  renderPipeline();
+}
+
+function aktualisiereKPIs() {
+  document.getElementById("kpi-gesamt").textContent = alleInserate.length;
+  document.getElementById("kpi-heute").textContent = alleInserate.filter(i => istHeute(i.datum)).length;
+  document.getElementById("kpi-interessant").textContent =
+    alleInserate.filter(i => getStatus(i.id) === "Interessant").length;
+}
+
+async function ladeAngebote() {
+  document.getElementById("content").innerHTML = '<div class="loading">Lade Inserate…</div>';
+  document.getElementById("timestamp-bar").textContent = "Lade…";
+  try {
+    const res = await fetch("angebote.json?t=" + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    alleInserate = data.inserate || [];
+    const ts = data.aktualisiert ? new Date(data.aktualisiert).toLocaleString("de-DE") : "—";
+    document.getElementById("timestamp-bar").textContent = `Aktualisiert: ${ts}`;
+    const kategorien = [...new Set(alleInserate.map(i => i.kategorie).filter(Boolean))].sort();
+    renderFilter(kategorien);
+    renderPipeline();
+    aktualisiereKPIs();
+  } catch (err) {
+    document.getElementById("timestamp-bar").textContent = "Fehler beim Laden";
+    document.getElementById("content").innerHTML = `
+      <div class="error-box">
+        <strong>Daten konnten nicht geladen werden</strong>
+        GitHub Pages muss aktiviert sein und <code>angebote.json</code> muss im Repo vorhanden sein.<br><br>
+        Beim lokalen Testen: <code>python3 -m http.server</code> starten.<br><br>
+        <span style="color:var(--text3);font-size:11px">${escapeHtml(String(err))}</span>
+      </div>`;
+    document.getElementById("kpi-gesamt").textContent = "—";
+    document.getElementById("kpi-heute").textContent = "—";
+    document.getElementById("kpi-interessant").textContent = "—";
+  }
+}
+
+ladeAngebote();
+</script>
+</body>
+</html>
