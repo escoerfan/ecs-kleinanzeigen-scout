@@ -9,54 +9,82 @@ import requests
 from bs4 import BeautifulSoup
 
 SUCHBEGRIFFE = [
-    # Bustypen
-    "Reisebus", "Linienbus", "Stadtbus",
-    # LKW-Typen
-    "LKW", "Sattelschlepper", "Kipper", "Pritschenwagen",
-    "Tieflader", "Schwertransporter",
-    "Tankwagen", "Tanklastzug",
-    "Kranwagen", "Mobilkran", "Autokran",
-    "Betonmischer",
-    # Auflieger / Anhänger
-    "Auflieger", "Sattelauflieger",
-    "Planenauflieger", "Kofferauflieger",
-    "Kühlauflieger", "Kühltransporter",
-    # Baumaschinen / Kommunal
-    "Bagger", "Kommunalfahrzeug",
-    # Marken — Busse
-    "Setra Bus", "Neoplan Bus",
-    "Mercedes Bus", "MAN Bus",
-    # Marken — LKW
-    "MAN LKW", "Mercedes LKW",
-    "Volvo LKW", "Scania LKW",
-    "DAF LKW", "Iveco LKW",
+    # SZM / Sattelzugmaschinen
+    "Sattelzugmaschine",
+    "Sattelschlepper",
+    # Kipper — nur hochwertige Markenfahrzeuge
+    "Schmitz Kipper",
+    "Mercedes Kipper",
+    "MAN Kipper",
+    "Volvo Kipper",
+    "Scania Kipper",
+    "DAF Kipper",
+    # Auflieger
+    "Sattelauflieger",
+    "Planenauflieger",
+    "Kofferauflieger",
+    "Kühlauflieger",
+    # Betonmischer-Auflieger (Trommel auf SZM)
+    "Betonmischer Auflieger",
+    "Fahrmischer Auflieger",
+    # Radlader
+    "Radlader",
+    "Kubota Radlader",
+    # Busse
+    "Reisebus",
+    "Linienbus",
 ]
+
+# Kategorie-Gruppen für die Filter-Pills in der UI
+KATEGORIE_GRUPPEN = {
+    "Sattelzugmaschine":      "SZM",
+    "Sattelschlepper":        "SZM",
+    "Schmitz Kipper":         "Kipper",
+    "Mercedes Kipper":        "Kipper",
+    "MAN Kipper":             "Kipper",
+    "Volvo Kipper":           "Kipper",
+    "Scania Kipper":          "Kipper",
+    "DAF Kipper":             "Kipper",
+    "Sattelauflieger":        "Auflieger",
+    "Planenauflieger":        "Auflieger",
+    "Kofferauflieger":        "Auflieger",
+    "Kühlauflieger":          "Auflieger",
+    "Betonmischer Auflieger": "Betonmischer",
+    "Fahrmischer Auflieger":  "Betonmischer",
+    "Radlader":               "Radlader",
+    "Kubota Radlader":        "Radlader",
+    "Reisebus":               "Bus",
+    "Linienbus":              "Bus",
+}
 
 BASE_URL = "https://www.kleinanzeigen.de"
 SEARCH_TEMPLATE = "https://www.kleinanzeigen.de/s-nutzfahrzeuge-anhaenger/{term}/k0c215"
 SEARCH_TEMPLATE_SEITE = "https://www.kleinanzeigen.de/s-nutzfahrzeuge-anhaenger/{term}/seite:{page}/k0c215"
 
-# Wie viele Ergebnisseiten pro Suchbegriff maximal abrufen
 MAX_SEITEN = 10
 
-# Bekannte Fahrzeugmarken für die automatische Markenerkennung im Titel
 BEKANNTE_MARKEN = [
     "MAN", "Mercedes-Benz", "Mercedes", "Daimler",
     "Volvo", "Scania", "DAF", "Iveco", "Renault Trucks",
     "Setra", "Neoplan", "Evobus",
     "Liebherr", "Caterpillar", "CAT", "Komatsu", "Terex",
+    "Kubota", "JCB", "Wacker Neuson",
     "Fliegl", "Krone", "Schmitz Cargobull", "Schmitz", "Schwarzmüller",
     "Wielton", "Kässbohrer", "Kassbohrer",
 ]
 
-# Titel-Blacklist: Inserate die diese Wörter enthalten werden ignoriert
+# Maßstab-Regex: filtert Spielzeug-/Modellinserate mit Verhältnisangabe wie 1:87, 1:50 …
+RATIO_RE = re.compile(r"\b1\s*:\s*\d{1,3}\b")
+
 BLACKLIST = [
     # Vermietung
     "mieten", "vermieten", "vermietung", "miete", "mietwagen", "leihwagen",
     # Spielzeug / Modelle / Sammlerstücke
     "modell", "spielzeug", "modellauto", "miniatur", "miniatür",
     "lego", "playmobil", "märklin", "marklin", "spur h0", "spur n",
-    "sammler", "diecast", "1:87", "1:50", "1:43", "1:32", "1:18",
+    "sammler", "diecast",
+    "1:87", "1:50", "1:43", "1:32", "1:18", "1:25", "1:16", "1:14",
+    "1:12", "1:10", "1:8", "1:76", "1:160", "1:120", "1:35", "1:64",
     # Druckerzeugnisse / Kunst
     "gemälde", "gemalde", "bild ", "poster", "druck", "foto",
     "buch", "literatur", "roman", "zeitschrift", "heft ",
@@ -77,28 +105,46 @@ BLACKLIST = [
     "bewerbung", "gehalt", "lohn ",
 ]
 
-# Händler-Erkennungs-Keywords: gewerbliche Anbieter → ignorieren
+# Händler-Erkennungs-Keywords — gewerbliche Anbieter ausschließen
 HAENDLER_KEYWORDS = [
-    # Unternehmensformen im Titel — stärkstes Erkennungsmerkmal
-    " gmbh", " ag ", " kg ", " ohg ", " gbr ", "gmbh & co", " e.k.",
-    "gmbh&co", "co. kg",
-    # Branchenbezeichnungen
-    "autohaus", "fahrzeughandel", "nutzfahrzeughandel",
-    "fahrzeughändler", "fahrzeughaendler",
-    "nutzfahrzeughändler", "nutzfahrzeughaendler",
+    # Automobil-Händler
+    "autohaus", "automobile gmbh", "automobil gmbh", "automobil ag",
+    "automobile ag", "automobile center", "auto center gmbh",
+    "automobil center",
+    # Fahrzeughandel
+    "fahrzeughandel", "fahrzeughändler", "fahrzeughaendler",
+    "nutzfahrzeughandel", "nutzfahrzeughändler", "nutzfahrzeughaendler",
+    "nutzfahrzeuge gmbh", "nutzfahrzeuge ag", "nutzfahrzeugcenter",
+    "nutzfahrzeug center", "nutzfahrzeug-center",
+    # NFZ-Händler
+    "nfz-handel", "nfz handel", "nfz center", "nfz gmbh",
+    "nfz-center", "nfz-händler", "nfz haendler", "nfz-haendler",
+    # LKW-Handel
+    "lkw-handel", "lkw handel", "lkw center", "lkw-center",
+    "lkw händler", "lkw haendler", "lkw verkauf", "lkw-verkauf",
     "kfz-handel", "kfz handel", "kfz-händler",
-    # Typische Händler-Formulierungen
+    # Truck Center
+    "truck center", "truckcenter", "truck dealer", "truck shop", "truckshop",
+    # Flottenauflösung / Fuhrpark
     "flottenauflösung", "flottenauflosung", "flottenbetrieb",
-    "lagerfahrzeug", "lagerbestand", "vorführfahrzeug",
-    "vorfuhrfahrzeug", "wir verkaufen",
-    "unser fuhrpark", "aus unserem fuhrpark",
+    "fuhrparkauflösung", "fuhrparkauflosung",
+    # Lagerbestand
+    "lagerfahrzeug", "lagerbestand", "großes lager",
+    # Vorführfahrzeug
+    "vorführfahrzeug", "vorfuhrfahrzeug",
+    # Händler-Formulierungen
+    "wir verkaufen", "unser fuhrpark", "aus unserem fuhrpark",
     "händleranfragen", "haendleranfragen",
     "gewerblicher verkauf", "gewerblich verkauf",
-    "weitere fahrzeuge verfügbar", "sofort verfügbar mehrere",
-    "großes lager",
+    "weitere fahrzeuge verfügbar", "weitere fahrzeuge auf anfrage",
+    "sofort verfügbar mehrere", "mehrere einheiten",
+    # Vertragspartner / Niederlassungen
+    "niederlassung", "vertragshändler", "vertragswerkstatt",
+    # Fahrzeugbörse / An- und Verkauf
+    "fahrzeugbörse", "fahrzeugboerse",
+    "an- und verkauf", "ankauf und verkauf", "inzahlungnahme",
 ]
 
-# Mindestpreis in € — darunter ist es vermutlich kein echtes Nutzfahrzeug
 MINDESTPREIS = 500
 
 DATA_FILE = Path("angebote.json")
@@ -132,7 +178,6 @@ def extrahiere_preis(text: str) -> str:
 
 
 def preis_als_zahl(preis_str: str) -> float:
-    """Konvertiert '15.000 €' → 15000.0, gibt 0 zurück wenn nicht parsbar."""
     if not preis_str:
         return 0.0
     zahl = re.sub(r"[^\d,.]", "", preis_str).replace(".", "").replace(",", ".")
@@ -143,34 +188,28 @@ def preis_als_zahl(preis_str: str) -> float:
 
 
 def extrahiere_fahrzeugdaten(titel: str, beschreibung: str) -> dict:
-    """Liest Baujahr, Kilometerstand, Marke und Nutzlast aus Titel + Beschreibung."""
     text = titel + " " + beschreibung
     result = {}
 
-    # Baujahr — explizit ("Bj. 2015", "EZ 2018", "Baujahr 2010")
     bj = re.search(
         r"(?:Bj\.?|EZ\.?|Baujahr|Jg\.?)\s*((?:19|20)\d{2})\b", text, re.I
     )
     if bj:
         result["baujahr"] = bj.group(1)
     else:
-        # Jahreszahl im Titel allein, plausibles Fahrzeugjahr 1980–2026
         yr = re.search(r"\b((?:19[89]\d|20[012]\d))\b", titel)
         if yr:
             result["baujahr"] = yr.group(1)
 
-    # Kilometerstand
     km = re.search(r"([\d.,]+)\s*km\b", text, re.I)
     if km:
         result["km"] = km.group(0).strip()
 
-    # Marke — längste Übereinstimmung gewinnt (z.B. "Schmitz Cargobull" vor "Schmitz")
     for marke in sorted(BEKANNTE_MARKEN, key=len, reverse=True):
         if re.search(r"\b" + re.escape(marke) + r"\b", text, re.I):
             result["marke"] = marke
             break
 
-    # Nutzlast / Gewicht (z.B. "7,5t", "40 Tonnen", "3.5to")
     nl = re.search(r"([\d.,]+)\s*(?:to?\.?|tonnen)\b", text, re.I)
     if nl:
         result["nutzlast"] = nl.group(0).strip()
@@ -179,7 +218,6 @@ def extrahiere_fahrzeugdaten(titel: str, beschreibung: str) -> dict:
 
 
 def ist_haendler_name(titel: str, beschreibung: str):
-    """Gibt den gefundenen Händler-Keyword zurück, sonst None."""
     t = titel.lower()
     d = beschreibung.lower()
     for wort in HAENDLER_KEYWORDS:
@@ -189,24 +227,23 @@ def ist_haendler_name(titel: str, beschreibung: str):
 
 
 def ist_relevant(inserat: dict) -> bool:
-    """Gibt False zurück wenn das Inserat irrelevant ist."""
     titel_lower = inserat.get("titel", "").lower()
     beschreibung_lower = inserat.get("beschreibung", "").lower()
 
-    # Händler via HTML-Badge erkannt → raus
     if inserat.get("haendler", False):
         return False
 
-    # Händler via Keywords → raus
     if ist_haendler_name(titel_lower, beschreibung_lower):
         return False
 
-    # Allgemeine Blacklist (Spielzeug, Poster, Stellenanzeigen, …)
     for wort in BLACKLIST:
         if wort in titel_lower or wort in beschreibung_lower:
             return False
 
-    # Preis-Check: wenn Preis bekannt und unter Mindestpreis → irrelevant
+    # Maßstab-Ratio (Spielzeug / Modell)
+    if RATIO_RE.search(titel_lower) or RATIO_RE.search(beschreibung_lower):
+        return False
+
     preis = preis_als_zahl(inserat.get("preis", ""))
     if preis > 0 and preis < MINDESTPREIS:
         return False
@@ -265,6 +302,7 @@ def init_session() -> requests.Session:
 def parse_inserate(html: str, suchbegriff: str) -> list:
     soup = BeautifulSoup(html, "lxml")
     inserate = []
+    kategorie = KATEGORIE_GRUPPEN.get(suchbegriff, suchbegriff)
 
     articles = soup.find_all("article", attrs={"data-adid": True})
     if not articles:
@@ -278,7 +316,6 @@ def parse_inserate(html: str, suchbegriff: str) -> list:
         try:
             adid = art.get("data-adid", "")
 
-            # Titel + Link
             link_tag = art.find("a", href=re.compile(r"/s-anzeige/"))
             if not link_tag:
                 link_tag = art.find("a", href=True)
@@ -287,17 +324,14 @@ def parse_inserate(html: str, suchbegriff: str) -> list:
             link = href if href.startswith("http") else BASE_URL + href
             inserat_id = adid or extrahiere_id(link)
 
-            # Preis
             preis_tag = art.find(class_=re.compile(r"price|preis", re.I))
             preis = preis_tag.get_text(strip=True) if preis_tag else ""
             if not preis:
                 preis = extrahiere_preis(art.get_text())
 
-            # Ort
             ort_tag = art.find(class_=re.compile(r"locality|location|ort", re.I))
             ort = ort_tag.get_text(strip=True) if ort_tag else ""
 
-            # Datum
             datum_tag = art.find("time") or art.find(class_=re.compile(r"date|datum|zeit", re.I))
             datum_raw = ""
             if datum_tag:
@@ -313,17 +347,14 @@ def parse_inserate(html: str, suchbegriff: str) -> list:
                 except Exception:
                     pass
 
-            # Bild
             img_tag = art.find("img", src=True)
             bild = ""
             if img_tag:
                 bild = img_tag.get("src", "") or img_tag.get("data-src", "")
 
-            # Beschreibung
             desc_tag = art.find(class_=re.compile(r"desc|beschreibung|text", re.I))
             beschreibung = desc_tag.get_text(strip=True)[:300] if desc_tag else ""
 
-            # Händler-Erkennung via HTML-Badge
             ist_haendler = False
             gewerblich_badge = art.find(
                 lambda tag: tag.name in ("span", "i", "div", "small", "strong")
@@ -342,7 +373,6 @@ def parse_inserate(html: str, suchbegriff: str) -> list:
             if not titel:
                 continue
 
-            # Fahrzeugdaten aus Titel + Beschreibung extrahieren
             fahrzeugdaten = extrahiere_fahrzeugdaten(titel, beschreibung)
 
             inserate.append({
@@ -352,7 +382,7 @@ def parse_inserate(html: str, suchbegriff: str) -> list:
                 "ort": ort,
                 "datum": datum_iso,
                 "link": link,
-                "kategorie": suchbegriff,
+                "kategorie": kategorie,
                 "bild": bild,
                 "beschreibung": beschreibung,
                 "haendler": ist_haendler,
@@ -390,7 +420,6 @@ def scrape_seite(session: requests.Session, suchbegriff: str, seite: int = 1) ->
 
 
 def scrape_alle_seiten(session: requests.Session, suchbegriff: str) -> list:
-    """Scrapet alle Seiten eines Suchbegriffs bis keine Ergebnisse mehr kommen."""
     alle = []
     for seite in range(1, MAX_SEITEN + 1):
         ergebnisse = scrape_seite(session, suchbegriff, seite)
@@ -423,20 +452,17 @@ def main():
         neue = scrape_alle_seiten(session, begriff)
         time.sleep(3)
         for ins in neue:
-            # Händler via HTML-Badge
             if ins.get("haendler", False):
                 gefiltert_haendler += 1
                 gefiltert_gesamt += 1
                 print(f"    [HÄNDLER-HTML] {ins['titel'][:60]}")
                 continue
-            # Händler via Keyword
             kw = ist_haendler_name(ins.get("titel", ""), ins.get("beschreibung", ""))
             if kw:
                 gefiltert_haendler += 1
                 gefiltert_gesamt += 1
                 print(f"    [HÄNDLER-KW '{kw}'] {ins['titel'][:60]}")
                 continue
-            # Allgemeine Relevanz
             if not ist_relevant(ins):
                 gefiltert_inhalt += 1
                 gefiltert_gesamt += 1
