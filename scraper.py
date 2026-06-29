@@ -270,6 +270,13 @@ HAENDLER_KEYWORDS = [
 
 MINDESTPREIS = 500
 
+# Regex für Telefonnummern im Freitext
+TELEFON_RE = re.compile(
+    r"(?:tel\.?|telefon|phone|mobil|handy|ruf)?\s*[:\-]?\s*"
+    r"(\+?[\d\s\(\)\-\/]{7,20})",
+    re.I,
+)
+
 DATA_FILE = Path("angebote.json")
 MAX_ALTER_TAGE = 7
 
@@ -372,6 +379,44 @@ def ist_relevant(inserat: dict) -> bool:
         return False
 
     return True
+
+
+def hat_telefonnummer(session: requests.Session, link: str) -> tuple[bool, str]:
+    """Ruft die Detailseite ab und prüft auf Telefonnummer-Indikator oder Freitext-Nummer."""
+    try:
+        session.headers.update({"Referer": BASE_URL})
+        r = session.get(link, timeout=20)
+        if r.status_code != 200:
+            return False, ""
+        soup = BeautifulSoup(r.text, "lxml")
+
+        # 1) tel:-Link vorhanden → Nummer direkt lesbar
+        tel_link = soup.find("a", href=re.compile(r"^tel:", re.I))
+        if tel_link:
+            nummer = tel_link.get_text(strip=True) or tel_link["href"].replace("tel:", "")
+            return True, nummer
+
+        # 2) "Telefonnummer anzeigen"-Button → Nutzer hat Nummer hinterlegt
+        phone_btn = soup.find(
+            lambda tag: tag.name in ("button", "a", "span", "div")
+            and re.search(r"telefon|rufnummer|phone\s*number", tag.get_text(), re.I)
+        )
+        if phone_btn:
+            return True, ""
+
+        # 3) Nummer im Beschreibungstext
+        desc = soup.find(id=re.compile(r"viewad-description|ad-description", re.I))
+        if not desc:
+            desc = soup.find(class_=re.compile(r"description|beschreibung", re.I))
+        text = desc.get_text(" ", strip=True) if desc else ""
+        m = TELEFON_RE.search(text)
+        if m:
+            return True, m.group(1).strip()
+
+        return False, ""
+    except Exception as e:
+        print(f"    Telefon-Check Fehler ({link[:60]}): {e}")
+        return False, ""
 
 
 def strip_html(text: str) -> str:
@@ -593,12 +638,18 @@ def main():
             if ins["id"] in bestehende_ids:
                 duplikate += 1
             else:
+                hat_tel, nummer = hat_telefonnummer(session, ins["link"])
+                if not hat_tel:
+                    print(f"    [KEIN TELEFON] {ins['titel'][:60]}")
+                    continue
+                ins["telefon"] = nummer
                 alle_neuen.append(ins)
                 bestehende_ids.add(ins["id"])
+                time.sleep(1)
 
     bestehende_gefiltert = [
         ins for ins in bestehend.get("inserate", [])
-        if not ist_zu_alt(ins.get("datum", ""))
+        if not ist_zu_alt(ins.get("datum", "")) and "telefon" in ins
     ]
 
     inserate_gesamt = alle_neuen + bestehende_gefiltert
