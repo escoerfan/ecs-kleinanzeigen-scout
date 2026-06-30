@@ -107,50 +107,67 @@ BLACKLIST = [
 
 # Händler-Erkennungs-Keywords — gewerbliche Anbieter ausschließen
 HAENDLER_KEYWORDS = [
+    # Automobil-Händler
     "autohaus", "automobile gmbh", "automobil gmbh", "automobil ag",
     "automobile ag", "automobile center", "auto center gmbh",
     "automobil center",
+    # Fahrzeughandel
     "fahrzeughandel", "fahrzeughändler", "fahrzeughaendler",
     "nutzfahrzeughandel", "nutzfahrzeughändler", "nutzfahrzeughaendler",
     "nutzfahrzeuge gmbh", "nutzfahrzeuge ag", "nutzfahrzeugcenter",
     "nutzfahrzeug center", "nutzfahrzeug-center",
+    # NFZ-Händler
     "nfz-handel", "nfz handel", "nfz center", "nfz gmbh",
     "nfz-center", "nfz-händler", "nfz haendler", "nfz-haendler",
+    # LKW-Handel
     "lkw-handel", "lkw handel", "lkw center", "lkw-center",
     "lkw händler", "lkw haendler", "lkw verkauf", "lkw-verkauf",
     "kfz-handel", "kfz handel", "kfz-händler",
+    # Truck Center
     "truck center", "truckcenter", "truck dealer", "truck shop", "truckshop",
+    # Flottenauflösung / Fuhrpark
     "flottenauflösung", "flottenauflosung", "flottenbetrieb",
     "fuhrparkauflösung", "fuhrparkauflosung",
+    # Lagerbestand
     "lagerfahrzeug", "lagerbestand", "großes lager",
+    # Vorführfahrzeug
     "vorführfahrzeug", "vorfuhrfahrzeug",
+    # Händler-Formulierungen
     "wir verkaufen", "unser fuhrpark", "aus unserem fuhrpark",
     "händleranfragen", "haendleranfragen",
     "gewerblicher verkauf", "gewerblich verkauf",
     "weitere fahrzeuge verfügbar", "weitere fahrzeuge auf anfrage",
     "sofort verfügbar mehrere", "mehrere einheiten",
+    # Vertragspartner / Niederlassungen
     "niederlassung", "vertragshändler", "vertragswerkstatt",
+    # Fahrzeugbörse / An- und Verkauf
     "fahrzeugbörse", "fahrzeugboerse",
     "an- und verkauf", "ankauf und verkauf", "inzahlungnahme",
+    # Autohaus / Auto-Handel
     "auto haus", "autohandel", "auto handel", "autohändler", "autohaendler",
     "autocenter", "auto center", "autozentrum", "auto zentrum",
     "autoagentur", "autovertrieb", "auto vertrieb",
     "autobörse", "autoboerse", "automarkt", "auto markt",
     "autoexport", "auto export", "autoimport", "auto import",
+    # Automobil
     "automobilhandel", "automobil handel", "automobilhändler", "automobil haendler",
     "automobilcenter", "automobilzentrum", "automobil zentrum",
     "automobilvertrieb", "automobil vertrieb", "automobilagentur", "automobil agentur",
+    # KFZ
     "kfzhandel", "kfz händler", "kfzhaendler",
     "kfzvertrieb", "kfz vertrieb",
     "kfzboerse", "kfz börse",
     "kfz export", "kfzexport", "kfz import", "kfzimport",
+    # Kraftfahrzeug
     "kraftfahrzeughandel", "kraftfahrzeug handel",
     "kraftfahrzeughändler", "kraftfahrzeug haendler",
+    # Gebrauchtwagen
     "gebrauchtwagenhandel", "gebrauchtwagen handel",
     "gebrauchtwagenhändler", "gebrauchtwagen haendler",
     "gebrauchtwagenzentrum", "gebrauchtwagen zentrum",
     "gebrauchtwagencenter", "gebrauchtwagen center",
     "wagenhandel", "wagen handel",
+    # Fahrzeug (Ergänzungen)
     "fahrzeug handel", "fahrzeug haendler",
     "fahrzeugcenter", "fahrzeug center",
     "fahrzeugzentrum", "fahrzeug zentrum",
@@ -159,12 +176,14 @@ HAENDLER_KEYWORDS = [
     "fahrzeugmarkt", "fahrzeugexport", "fahrzeug export",
     "fahrzeugimport", "fahrzeug import",
     "fahrzeugverwertung", "fuhrparkverwertung",
+    # Englische Begriffe / Car-Dealer
     "car center", "carcenter", "car trade", "cartrade", "car trading",
     "vehicle trade", "vehicle trading", "vehicle dealer",
     "commercial vehicle dealer", "commercial vehicle",
     "dealer vehicles", "dealer cars", "dealer trucks",
     "used trucks", "used truck dealer",
     "commercial trucks", "commercial truck sales",
+    # Nutzfahrzeuge (Ergänzungen)
     "nutzfahrzeuge handel", "nutzfahrzeuge händler", "nutzfahrzeuge haendler",
     "nutzfahrzeuge zentrum", "nutzfahrzeuge center",
     "nutzfahrzeugvertrieb", "nutzfahrzeug vertrieb",
@@ -173,14 +192,17 @@ HAENDLER_KEYWORDS = [
     "gebrauchte nutzfahrzeuge", "gebraucht nutzfahrzeuge",
     "nutzfahrzeug an und verkauf", "nutzfahrzeugverkauf",
     "nfzhandel", "nfz händler", "nfzzentrum", "nfz zentrum",
+    # LKW (Ergänzungen)
     "lkwhandel", "lkwhaendler", "lkwzentrum", "lkw zentrum", "lkwcenter",
     "lkw export", "lkwexport", "lkw vertrieb", "lkwvertrieb",
     "lkwmarkt", "lkw markt", "lkw an und verkauf", "lkw verkauf händler",
+    # Truck (Ergänzungen)
     "truckhandel", "truck händler", "truckhaendler",
     "truckzentrum", "truck zentrum",
     "truck export", "truckexport", "truck vertrieb", "truckvertrieb",
     "truckmarkt", "truck market", "truck sales", "trucks handel",
     "truck store", "truckstore", "truckbörse", "truckboerse",
+    # Transporter / Van / Sprinter / Crafter
     "transporterhandel", "transporter handel",
     "transporterhändler", "transporter haendler",
     "transporterzentrum", "transporter zentrum",
@@ -190,6 +212,7 @@ HAENDLER_KEYWORDS = [
     "crafterhandel", "crafter handel", "crafter händler", "crafterhaendler",
     "van handel", "vanhandel", "van händler", "vanhaendler",
     "van center", "vancenter",
+    # Bus / Omnibus / Reisebus
     "bushandel", "bus handel", "bus händler", "bushaendler",
     "buszentrum", "bus zentrum", "buscenter", "bus center",
     "omnibushandel", "omnibus handel", "omnibus händler", "omnibushaendler",
@@ -198,6 +221,7 @@ HAENDLER_KEYWORDS = [
     "linienbushandel", "linienbus handel", "linienbus händler", "linienbushaendler",
     "bus depot", "bus sales", "coach dealer", "coach sales",
     "used buses", "used bus dealer",
+    # Baumaschinen / Kommunalfahrzeuge
     "baumaschinenhandel", "baumaschinen handel",
     "baumaschinenhändler", "baumaschinen haendler",
     "baumaschinenzentrum", "baumaschinen zentrum",
@@ -207,21 +231,26 @@ HAENDLER_KEYWORDS = [
     "kommunalfahrzeughändler", "kommunalfahrzeug haendler",
     "kommunalfahrzeuge handel", "kommunalfahrzeuge händler",
     "kommunaltechnikhandel", "kommunaltechnik handel",
+    # Anhänger / Auflieger / Trailer
     "anhängerhandel", "anhaengerhandel", "anhänger händler", "anhaenger haendler",
     "aufliegerhandel", "auflieger handel", "aufliegerhändler", "auflieger haendler",
     "trailerhandel", "trailer handel", "trailer händler", "trailerhaendler",
     "trailer center", "trailercenter",
     "sattelaufliegerhandel", "sattelauflieger handel",
+    # Vertrieb / Agentur / Börse / Markt
     "nutzfahrzeugbörse", "nutzfahrzeugboerse",
     "restwertbörse", "restwertboerse",
     "remarketing", "fahrzeug remarketing", "fleet remarketing",
     "remarketing center", "remarketing zentrum",
     "gebrauchtfahrzeugzentrum", "gebrauchtfahrzeug zentrum",
     "gebrauchtfahrzeugcenter", "gebrauchtfahrzeug center",
+    # Export / Import / EU
     "reimport fahrzeuge", "eu fahrzeughandel", "eu fahrzeuge handel",
+    # An- und Verkauf (Ergänzungen)
     "fahrzeug an und verkauf", "auto an und verkauf",
     "kfz an und verkauf", "lkw an und verkauf",
     "fahrzeuge ankauf", "ankauf verkauf fahrzeuge",
+    # Händler-Typen / gewerblich
     "markenhändler", "mehrmarkenhändler", "mehrmarken händler",
     "freier händler", "freier autohändler", "freier kfz händler", "freier fahrzeughändler",
     "gewerblicher fahrzeughändler", "gewerblicher autohändler",
@@ -231,9 +260,11 @@ HAENDLER_KEYWORDS = [
     "professioneller fahrzeugverkauf",
     "nutzfahrzeugverkauf händler", "transporter verkauf händler",
     "bus verkauf händler",
+    # Handel mit
     "handel mit fahrzeugen", "handel mit autos",
     "handel mit lkw", "handel mit nutzfahrzeugen",
     "handel mit transportern", "handel mit bussen",
+    # Wagenpark / Fuhrpark
     "wagenpark handel", "fuhrpark handel",
 ]
 
@@ -339,6 +370,7 @@ def ist_relevant(inserat: dict) -> bool:
         if wort in titel_lower or wort in beschreibung_lower:
             return False
 
+    # Maßstab-Ratio (Spielzeug / Modell)
     if RATIO_RE.search(titel_lower) or RATIO_RE.search(beschreibung_lower):
         return False
 
@@ -350,6 +382,7 @@ def ist_relevant(inserat: dict) -> bool:
 
 
 def hat_telefonnummer(session: requests.Session, link: str) -> tuple[bool, str]:
+    """Ruft die Detailseite ab und prüft auf Telefonnummer-Indikator oder Freitext-Nummer."""
     try:
         session.headers.update({"Referer": BASE_URL})
         r = session.get(link, timeout=20)
@@ -357,13 +390,13 @@ def hat_telefonnummer(session: requests.Session, link: str) -> tuple[bool, str]:
             return False, ""
         soup = BeautifulSoup(r.text, "lxml")
 
-        # 1) tel:-Link vorhanden
+        # 1) tel:-Link vorhanden → Nummer direkt lesbar
         tel_link = soup.find("a", href=re.compile(r"^tel:", re.I))
         if tel_link:
             nummer = tel_link.get_text(strip=True) or tel_link["href"].replace("tel:", "")
             return True, nummer
 
-        # 2) "Telefonnummer anzeigen"-Button
+        # 2) "Telefonnummer anzeigen"-Button → Nutzer hat Nummer hinterlegt
         phone_btn = soup.find(
             lambda tag: tag.name in ("button", "a", "span", "div")
             and re.search(r"telefon|rufnummer|phone\s*number", tag.get_text(), re.I)
@@ -605,18 +638,12 @@ def main():
             if ins["id"] in bestehende_ids:
                 duplikate += 1
             else:
-                hat_tel, nummer = hat_telefonnummer(session, ins["link"])
-                if not hat_tel:
-                    print(f"    [KEIN TELEFON] {ins['titel'][:60]}")
-                    continue
-                ins["telefon"] = nummer
                 alle_neuen.append(ins)
                 bestehende_ids.add(ins["id"])
-                time.sleep(1)
 
     bestehende_gefiltert = [
         ins for ins in bestehend.get("inserate", [])
-        if not ist_zu_alt(ins.get("datum", "")) and "telefon" in ins
+        if not ist_zu_alt(ins.get("datum", ""))
     ]
 
     inserate_gesamt = alle_neuen + bestehende_gefiltert
