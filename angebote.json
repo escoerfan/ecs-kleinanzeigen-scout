@@ -1,7 +1,103 @@
 {
-  "aktualisiert": "2026-07-18T20:55:43.902917+00:00",
-  "anzahl": 2515,
+  "aktualisiert": "2026-07-19T02:49:43.822624+00:00",
+  "anzahl": 2521,
   "inserate": [
+    {
+      "id": "3462345359",
+      "titel": "12",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:41:25.435959+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/mercedes-benz-actros-1848-sattelzugmaschine-ez-2018-euro-6-standk/3462345359-276-1413",
+      "kategorie": "SZM",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/a6/a664bf78-7185-4c12-824f-3ceb01d0b0e6?rule=$_2.AUTO",
+      "beschreibung": "12",
+      "haendler": false
+    },
+    {
+      "id": "3462337350",
+      "titel": "8",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:41:25.437495+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/scania-hauber-torpedo-v8-sattelzugmaschine/3462337350-276-26313",
+      "kategorie": "SZM",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/57/57ecd462-a7b5-48ef-8886-49997b058c8a?rule=$_2.AUTO",
+      "beschreibung": "8",
+      "haendler": false
+    },
+    {
+      "id": "2996426032",
+      "titel": "19",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:41:48.557652+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/blumenzwiebelbuch-ddr-buch-320-seiten9/2996426032-76-17781",
+      "kategorie": "SZM",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/00/00a0e6e6-d087-4a9e-846f-499efdd12cf4?rule=$_2.AUTO",
+      "beschreibung": "19",
+      "haendler": false
+    },
+    {
+      "id": "3406417351",
+      "titel": "14",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:45:49.511809+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/zu-verkaufen-krone-anhaenger-planenauflieger/3406417351-276-1806",
+      "kategorie": "Auflieger",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/73/73510933-b146-474a-b4eb-5efdd42a5d98?rule=$_2.AUTO",
+      "beschreibung": "14",
+      "haendler": false
+    },
+    {
+      "id": "2166614975",
+      "titel": "8",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:47:50.740449+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/radlader-mieten-leihen-pflaster-sand-schutt-bau-landwirtschaft/2166614975-239-2579",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/36/36ee662b-9912-4da4-9e1e-f25dba2cfacb?rule=$_2.AUTO",
+      "beschreibung": "8",
+      "haendler": false
+    },
+    {
+      "id": "3462363033",
+      "titel": "14",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:47:50.742015+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/radlader-stapler-800kg-traglast-joystick/3462363033-276-5343",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/4e/4ea39b02-9d45-4b70-a284-d0f643833564?rule=$_2.AUTO",
+      "beschreibung": "14",
+      "haendler": false
+    },
+    {
+      "id": "3462338131",
+      "titel": "15",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:47:50.746332+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/-neu-wacker-neuson-wl250-radlader-netto-35-000-2025-neues-modell-schaufel-gabel-top-aktion-/3462338131-276-18074",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/13/1358ea1a-3bbb-4e10-a161-20a4522bdfd0?rule=$_2.AUTO",
+      "beschreibung": "15",
+      "haendler": false
+    },
+    {
+      "id": "3462332662",
+      "titel": "17",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-07-19T02:47:50.747953+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/radlader-kramer-312-allrad/3462332662-276-29430",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/94/94854329-1024-4474-920a-eefe4e834472?rule=$_2.AUTO",
+      "beschreibung": "17",
+      "haendler": false
+    },
     {
       "id": "3460876207",
       "titel": "6",
@@ -30060,30 +30156,6 @@
       "kategorie": "Bus",
       "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/5f/5f2f73f4-a9a4-4ed6-9e80-8052d7c48d4c?rule=$_2.AUTO",
       "beschreibung": "40",
-      "haendler": false
-    },
-    {
-      "id": "3450783334",
-      "titel": "12",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-07-12T02:45:53.232072+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/schmitz-kippmulde-stahl-trailer-lkw-auflieger-muldenkipper/3450783334-276-15355",
-      "kategorie": "Kipper",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/d4/d44f638d-2371-4b11-b124-e456aa57385f?rule=$_2.AUTO",
-      "beschreibung": "12",
-      "haendler": false
-    },
-    {
-      "id": "3456671268",
-      "titel": "16",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-07-12T02:46:20.917267+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/mercedes-benz-816d-vario-meiller-kipper-nl-3620kg-2x-ahk/3456671268-276-4295",
-      "kategorie": "Kipper",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/eb/eb9c0bcd-175e-4648-b39d-77e363b08dbf?rule=$_2.AUTO",
-      "beschreibung": "16",
       "haendler": false
     },
     {
