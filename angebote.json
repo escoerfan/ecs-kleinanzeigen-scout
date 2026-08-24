@@ -1,7 +1,55 @@
 {
-  "aktualisiert": "2026-08-24T01:19:58.041544+00:00",
-  "anzahl": 2394,
+  "aktualisiert": "2026-08-24T04:45:36.978847+00:00",
+  "anzahl": 2393,
   "inserate": [
+    {
+      "id": "3482737367",
+      "titel": "13",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-08-24T04:43:16.751887+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/historischer-zweiseitenkipper-5-7t-ca-4-30m-lang-stahlboden/3482737367-223-1656",
+      "kategorie": "Kipper",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/74/7490c6a6-c85d-4a47-846e-6c954519987c?rule=$_2.AUTO",
+      "beschreibung": "13",
+      "haendler": false
+    },
+    {
+      "id": "3465896383",
+      "titel": "5",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-08-24T04:44:43.749895+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/minibagger-radlader-ruettelplatte-dumper-usw-mieten/3465896383-239-8232",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/3d/3d03b047-812d-4ce0-952d-ecb104d4fcd5?rule=$_2.AUTO",
+      "beschreibung": "5",
+      "haendler": false
+    },
+    {
+      "id": "3336991364",
+      "titel": "14",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-08-24T04:45:01.060582+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/toyo-850-a-kubota-motor-hoflader-radlader-hofradlader-black-edition-50-ps-3-5-t/3336991364-276-1622",
+      "kategorie": "Radlader",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/ef/ef205e9c-749d-445c-a291-4020b4bba9e1?rule=$_2.AUTO",
+      "beschreibung": "14",
+      "haendler": false
+    },
+    {
+      "id": "3493228911",
+      "titel": "4",
+      "preis": "",
+      "ort": "",
+      "datum": "2026-08-24T04:45:07.125426+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/1-87-brekina-56019-setra-s6-reisebus-gruen-beige-ovp/3493228911-249-2886",
+      "kategorie": "Bus",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/31/31d440a4-d24e-4c21-bee9-01b79198d7db?rule=$_2.AUTO",
+      "beschreibung": "4",
+      "haendler": false
+    },
     {
       "id": "3491539407",
       "titel": "10",
@@ -28599,54 +28647,6 @@
       "haendler": false
     },
     {
-      "id": "1461561864",
-      "titel": "2",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-08-17T04:40:38.565260+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/hella-seitenmarkierungsleuchte-2ps340001-001-links-rechts/1461561864-223-3617",
-      "kategorie": "SZM",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/ec/ecf7f18a-c1a7-4727-81d3-d0e032e99381?rule=$_2.AUTO",
-      "beschreibung": "2",
-      "haendler": false
-    },
-    {
-      "id": "3400972613",
-      "titel": "3",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-08-17T04:40:47.731187+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/skoda-ruecklicht-rechte-seite-5jj945096/3400972613-223-1664",
-      "kategorie": "SZM",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/29/29373f2f-dbaa-4605-bbae-4b64b1f3f4f9?rule=$_2.AUTO",
-      "beschreibung": "3",
-      "haendler": false
-    },
-    {
-      "id": "2708494566",
-      "titel": "7",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-08-17T04:40:47.732908+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/seat-leon-5f-seitenwand-5f-limousine-links-originalteil/2708494566-223-6257",
-      "kategorie": "SZM",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/28/28fc1b46-c037-4237-8db0-c04e968a0d5d?rule=$_2.AUTO",
-      "beschreibung": "7",
-      "haendler": false
-    },
-    {
-      "id": "3343085569",
-      "titel": "10",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-08-17T04:44:44.402388+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/krone-megatrailer-planenauflieger-sdp27-edscha/3343085569-276-17272",
-      "kategorie": "Auflieger",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/97/975d1f18-55d9-410e-b978-f0cecc4eaae7?rule=$_2.AUTO",
-      "beschreibung": "10",
-      "haendler": false
-    },
-    {
       "id": "2852962447",
       "titel": "14",
       "preis": "",
@@ -28715,18 +28715,6 @@
       "link": "https://www.kleinanzeigen.de/s-anzeige/universelles-mikrofon-mit-verstaerker-fuer-linienbus-bus/3480809522-172-1871",
       "kategorie": "Bus",
       "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/83/8316203a-b1bf-4168-bbd0-3fc27c2d8117?rule=$_2.AUTO",
-      "beschreibung": "4",
-      "haendler": false
-    },
-    {
-      "id": "2226814753",
-      "titel": "4",
-      "preis": "",
-      "ort": "",
-      "datum": "2026-08-17T01:20:14.346735+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/lichtmaschine-daf-motor-solaris-linienbus/2226814753-276-8872",
-      "kategorie": "Bus",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/31/31ae3a30-06bc-49b8-b69e-4800d66c26d9?rule=$_2.AUTO",
       "beschreibung": "4",
       "haendler": false
     }
