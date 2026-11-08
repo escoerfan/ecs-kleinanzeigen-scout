@@ -1,7 +1,31 @@
 {
-  "aktualisiert": "2026-11-07T23:36:02.775995+00:00",
-  "anzahl": 1323,
+  "aktualisiert": "2026-11-08T04:50:25.608256+00:00",
+  "anzahl": 1319,
   "inserate": [
+    {
+      "id": "3472241654",
+      "titel": "9",
+      "preis": "...12.290 €",
+      "ort": "",
+      "datum": "2026-11-08T04:42:46.316437+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/honda-xl-750-transalp-seitenkoffer/3472241654-305-7674",
+      "kategorie": "SZM",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/3c/3c4d2273-696b-404f-aec4-fcc43f511b07?rule=$_2.AUTO",
+      "beschreibung": "9",
+      "haendler": false
+    },
+    {
+      "id": "3564814141",
+      "titel": "2",
+      "preis": "8715 €",
+      "ort": "",
+      "datum": "2026-11-08T04:49:30.754456+00:00",
+      "link": "https://www.kleinanzeigen.de/s-anzeige/herpa-reisebus-setra-s228dt-frossard/3564814141-249-1995",
+      "kategorie": "Bus",
+      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/b2/b23ea417-12f2-42e5-8914-36994e5caa84?rule=$_2.AUTO",
+      "beschreibung": "2",
+      "haendler": false
+    },
     {
       "id": "3424965235",
       "titel": "2",
@@ -15804,78 +15828,6 @@
       "kategorie": "Radlader",
       "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/f4/f4ede36c-72cb-46fc-94a7-63ccf20bf49a?rule=$_2.AUTO",
       "beschreibung": "30",
-      "haendler": false
-    },
-    {
-      "id": "3431437017",
-      "titel": "40",
-      "preis": "...94.962 €",
-      "ort": "",
-      "datum": "2026-11-01T04:39:32.652191+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/mercedes-benz-atego-1530-dreiseitenkipper-6e/3431437017-276-2438",
-      "kategorie": "SZM",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/50/506caf35-928a-447c-b11f-7e15065d1140?rule=$_2.AUTO",
-      "beschreibung": "40",
-      "haendler": false
-    },
-    {
-      "id": "3551086538",
-      "titel": "20",
-      "preis": "...5.250 €",
-      "ort": "",
-      "datum": "2026-11-01T04:40:17.795178+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/schmitz-mk2204-mini-kipper-truck-dreiseitenkipper-2016-faehrt/3551086538-276-6456",
-      "kategorie": "Kipper",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/4a/4a7854b9-a7db-4174-8edc-864b0322087a?rule=$_2.AUTO",
-      "beschreibung": "20",
-      "haendler": false
-    },
-    {
-      "id": "3520538301",
-      "titel": "20",
-      "preis": "...39.999 €",
-      "ort": "",
-      "datum": "2026-11-01T04:40:45.637418+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/mercedes-atego-1224-kipper-und-kran-inkl-mwst-/3520538301-276-6764",
-      "kategorie": "Kipper",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/6c/6c4c73f3-f220-4ba3-ad0f-ef3949d283a6?rule=$_2.AUTO",
-      "beschreibung": "20",
-      "haendler": false
-    },
-    {
-      "id": "3495914221",
-      "titel": "8",
-      "preis": "...4.900 €",
-      "ort": "",
-      "datum": "2026-11-01T04:45:12.457821+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/stetter-betonmischer-auflieger-10-m-/3495914221-223-5840",
-      "kategorie": "Betonmischer",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/f2/f20f1ab7-6b9d-4acb-9921-9750cdc40248?rule=$_2.AUTO",
-      "beschreibung": "8",
-      "haendler": false
-    },
-    {
-      "id": "3546541132",
-      "titel": "5",
-      "preis": "...23.800 €",
-      "ort": "",
-      "datum": "2026-11-01T04:45:46.133782+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/hydrema-906-baggerlader-radlader-lader/3546541132-276-6534",
-      "kategorie": "Radlader",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/5b/5bb8877d-4aab-4759-9f12-e60b43996309?rule=$_2.AUTO",
-      "beschreibung": "5",
-      "haendler": false
-    },
-    {
-      "id": "3558010679",
-      "titel": "8",
-      "preis": "...17.500 €",
-      "ort": "",
-      "datum": "2026-11-01T04:45:46.135328+00:00",
-      "link": "https://www.kleinanzeigen.de/s-anzeige/giant-v452t-hd-radlader-2013-inkl-schaufel-palettengabel/3558010679-276-1147",
-      "kategorie": "Radlader",
-      "bild": "https://img.kleinanzeigen.de/api/v1/prod-ads/images/79/79322783-eba6-40c3-abcf-b7c55a200d3e?rule=$_2.AUTO",
-      "beschreibung": "8",
       "haendler": false
     }
   ]
